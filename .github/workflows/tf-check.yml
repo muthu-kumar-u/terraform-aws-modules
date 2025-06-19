@@ -1,0 +1,43 @@
+name: Terraform Lint & Validate
+
+on:
+  pull_request:
+    branches:
+      - stage
+      - main
+    paths-ignore:
+      - "**.md"
+      - "**.txt"
+      - "**.yaml"
+      - "**.yml"
+      - ".gitignore"
+      - "LICENSE"
+      - ".editorconfig"
+      - ".github/workflows/**"
+
+jobs:
+  validate:
+    name: Terraform Format & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Read Terraform Version
+        id: tf-version
+        run: echo "TF_VERSION=$(cat tf-version.txt)" >> $GITHUB_OUTPUT
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ steps.tf-version.outputs.TF_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Validate
+        run: terraform validate
